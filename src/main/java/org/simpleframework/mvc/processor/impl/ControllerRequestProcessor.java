@@ -123,6 +123,7 @@ public class ControllerRequestProcessor implements RequestProcessor {
             return;
         }
         ResultRender resultRender;
+        //被ResponseBody标记的方法需要将结果转为json格式
         boolean isJson = controllerMethod.getInvokeMethod().isAnnotationPresent(ResponseBody.class);
         if (isJson) {
             resultRender = new JsonResultRender(result);

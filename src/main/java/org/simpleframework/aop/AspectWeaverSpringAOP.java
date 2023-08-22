@@ -11,6 +11,8 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 
 /**
+ * AOP1.0:
+ * 使用 Cglib 来实现：不需要业务类实现接口，相对灵活
  * @author RenHao
  * @create 2023-08-17 17:46
  */

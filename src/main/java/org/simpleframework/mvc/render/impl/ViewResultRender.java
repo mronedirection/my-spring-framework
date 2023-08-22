@@ -40,12 +40,14 @@ public class ViewResultRender implements ResultRender {
     public void render(RequestProcessorChain requestProcessorChain) throws Exception {
         HttpServletRequest request = requestProcessorChain.getRequest();
         HttpServletResponse response = requestProcessorChain.getResponse();
+        //获取视图路径和请求处理结果
         String path = modelAndView.getView();
         Map<String, Object> model = modelAndView.getModel();
+        //保存到request作用域
         for(Map.Entry<String, Object> entry : model.entrySet()){
             request.setAttribute(entry.getKey(), entry.getValue());
         }
-        //JSP
+        //JSP，转到对应的页面
         request.getRequestDispatcher(VIEW_PATH +path).forward(request, response);
 
     }
