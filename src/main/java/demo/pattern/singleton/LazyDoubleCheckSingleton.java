@@ -19,7 +19,6 @@ public class LazyDoubleCheckSingleton {
                     //instance = memory;   //3.设置instance指向刚分配的内存地址，此时instance！=null
                     instance = new LazyDoubleCheckSingleton();
                 }
-
             }
         }
         return instance;
