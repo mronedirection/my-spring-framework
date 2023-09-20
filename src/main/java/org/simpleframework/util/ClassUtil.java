@@ -25,7 +25,7 @@ public class ClassUtil {
      * @return 类集合
      */
     public static Set<Class<?>> extractPackageClass(String packageName){
-        //1.获取到类的加载器。
+        //1.获取到类的加载器
         ClassLoader classLoader = getClassLoader();
         //2.通过类加载器获取到加载的资源
         URL url = classLoader.getResource(packageName.replace(".", "/"));

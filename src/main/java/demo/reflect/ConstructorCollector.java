@@ -12,7 +12,7 @@ import java.lang.reflect.InvocationTargetException;
  *
  * 获取构造方法：
  *         1).批量的方法：
- *             public Constructor[] getConstructors()：所有"公有的"构造方法
+ *            public Constructor[] getConstructors()：所有"公有的"构造方法
               public Constructor[] getDeclaredConstructors()：获取所有的构造方法(包括私有、受保护、默认、公有)
  *         2).获取单个的方法，并调用：
  *             public Constructor getConstructor(Class... parameterTypes):获取单个的"公有的"构造方法：

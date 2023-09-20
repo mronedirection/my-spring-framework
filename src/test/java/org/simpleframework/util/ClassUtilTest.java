@@ -14,7 +14,7 @@ public class ClassUtilTest {
     @DisplayName("提取目标类方法：extractPackageClassTest")
     @Test
     public void extractPackageClassTest(){
-        Set<Class<?>> classSet =  ClassUtil.extractPackageClass("com.imooc.entity");
+        Set<Class<?>> classSet =  ClassUtil.extractPackageClass("com.pro.entity");
         System.out.println(classSet);
         Assertions.assertEquals(4, classSet.size());
     }

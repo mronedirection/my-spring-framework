@@ -5,7 +5,7 @@
 
 项目分为下面两条主线，一条是自研 Spring 框架，源码放在`src/main/java/org/simpleframework`这个包下面（其中 java 包下面的 com 是一个 Web 项目的 Demo，主要用于测试自研框架的功能，而 demo 是实现自研源码过程中涉及的泛型、设计模式、反射、注解的 demo ），另外一条主线是剖析 Spring 框架源码，源码需要自己去 Spring 官网 clone 到本地进行编译。
 
-<img src="img/image-20210305092404064.png" style="zoom: 50%;" />
+<img src="img/route.png" style="zoom: 50%;" />
 
 ## 环境准备
 
@@ -27,9 +27,9 @@
 
 **Spring框架图**
 
-<img src="https://gitee.com/noah2021/blogImage/raw/master/img/image-20210305093401986.png" alt="image-20210305093401986" style="zoom:50%;" />
+<img src="img/frame.png" alt="image-20210305093401986" style="zoom:50%;" />
 
-<img src="https://gitee.com/noah2021/blogImage/raw/master/img/image-20210305093428458.png" alt="image-20210305093428458" style="zoom:50%;" />
+<img src="img/frame1.png" alt="image-20210305093428458" style="zoom:50%;" />
 
 **Spring基础核心模块预览**
 
@@ -38,6 +38,7 @@
    包含框架基本的核心工具类，其他组件都要使用到这个包里的类；定义并提供资源的访问方式；
 
 2. spring-beans
+
    Spring主要面向Bean编程（BOP）；
 
    Bean的定义、解析、创建；
@@ -45,6 +46,7 @@
    BeanFactory；
 
 3. spring-context
+
    为Spring提供运行时环境，保存对象的状态；
 
    扩展了BeanFactory；
@@ -52,6 +54,7 @@
    ApplicationContext；
 
 4. spring-aop
+
    最小化的动态代理实现；
 
    JDK动态代理；
@@ -64,7 +67,7 @@
 
 在Java语言中，从织入切面的方式来看，存在三种织入方式：
 
-<img src="https://gitee.com/noah2021/blogImage/raw/master/img/image-20210305093547624.png" alt="image-20210305093547624" style="zoom: 80%;" />
+<img src="img/method.png"/>
 
 ### Spring源码的下载和编译
 
@@ -102,9 +105,9 @@ repositories {
 
 结果如下：
 
-![image-20210304174753976](https://gitee.com/noah2021/blogImage/raw/master/img/image-20210304174753976.png)
+<img src="img/compile1.png"/>
 
-![image-20210304174817112](https://gitee.com/noah2021/blogImage/raw/master/img/image-20210304174817112.png)
+<img src="img/compile2.png"/>
 
 4. 将源码项目导入 idea 然后等待 相关 jar 包下载
 5. 由于 spring-aspects 编译和其余包编译方法不同，故需要将 spring-aspects 从项目移除
@@ -213,12 +216,12 @@ public class HelloServlet extends HttpServlet {
 5. 配置 tomcat 并启动
 6. 理解 jsp 运行原理
 
-<img src="https://gitee.com/noah2021/blogImage/raw/master/img/image-20210306215318036.png" alt="image-20210306215318036" style="zoom: 80%;" />
+<img src="img/image-20210306215318036.png" alt="image-20210306215318036" style="zoom: 80%;" />
 
 ## 业务系统架子的搭建
 
 1. 创建 o2odb 数据库
-2. 门面/外观模式(Facade)：提供了一个统一的接口，用来访问子系统中的一群接口，从而让子系统更容易使用。下面举个门面模式的例子，其中 slf4j-log4j12 (Simple Logging Facade for Java)就是依靠门面模式解决了各个版本 jar 包依赖冲突问题。
+2. **门面/外观模式(Facade)**：提供了一个统一的接口，用来访问子系统中的一群接口，从而让子系统更容易使用。下面举个门面模式的例子，其中 slf4j-log4j12 (Simple Logging Facade for Java)就是依靠门面模式解决了各个版本 jar 包依赖冲突问题。
 
 ```java
 public class SubSystem {
@@ -351,19 +354,44 @@ public class RobotFactory implements GenericFactory<String, Integer>{
 ## 自研框架IOC实现前奏
 ### 工厂模式
 
-设计模式懂得都懂，不懂在这比划半天还是似懂非懂，可以结合源码加深理解。
+工厂模式将创建对象的**具体过程屏蔽隔离**起来，从而达到更高的灵活性，工厂模式可以分为三类：
 
 **简单工厂**
 
-略
+简单工厂模式包含以下几个主要组成部分：
+
+1. 产品接口（Product Interface）：定义了工厂所创建的对象的共同接口。该接口可以是一个抽象类或者接口，定义了产品对象的行为。
+2. 具体产品（Concrete Product）：实现了产品接口的具体对象，是工厂所创建的对象的具体类型。
+3. 简单工厂（Simple Factory）：负责创建产品对象的工厂类。它根据客户端的请求，决定实例化哪个具体产品对象，并将其返回给客户端。
+
+简单工厂模式的工作流程如下：
+
+1. 客户端通过调用工厂类的方法来请求一个产品对象。
+2. 工厂类根据客户端的请求，决定实例化哪个具体产品对象。
+3. 工厂类实例化具体产品对象，并将其返回给客户端。
+4. 客户端通过产品接口操作具体产品对象。
 
 **工厂方法**
 
-略
+工厂方法模式将工厂抽象化，并定义一个创建对象的接口。每增加新产品，只需增加该产品以及对应的具体实现工厂类，由具体工厂类决定要实例化的产品是哪个，将对象的创建与实例化延迟到子类，这样工厂的设计就符合“开闭原则”了，扩展时不必去修改原来的代码。
+
+工厂方法模式包含以下几个主要组成部分：
+
+1. 抽象产品（Abstract Product）：具体产品继承的父类或实现的接口，在 Java 中一般由抽象类或者接口来实现。
+2. 具体产品（Concrete Product）：实现了产品接口的具体对象，是工厂所创建的对象的具体类型。
+3. 具体工厂（Factory）：被应用程序调用以创建具体产品的对象，含有和具体业务逻辑有关的代码。
+4. 抽象工厂（AbstractFactory）：工厂方法模式的核心，是具体工厂角色必须实现的接口或者必须继承的父类，在 Java 中它由抽象类或者接口来实现。
 
 **抽象工厂**
 
-略
+抽象工厂模式主要**用于创建相关对象的家族**。当一个产品族中需要被设计在一起工作时，通过抽象工厂模式，能够保证客户端始终只使用同一个产品族中的对象。
+
+抽象工厂模式包含以下几个主要组成部分：
+
+1. 抽象产品（Abstract Product）：具体产品继承的父类或实现的接口，在 Java 中一般由抽象类或者接口来实现。
+2. 具体产品（Concrete Product）：实现了产品接口的具体对象，是工厂所创建的对象的具体类型。
+3. 具体工厂（Factory）：用于生产不同产品族，要创建一个产品，用户只需使用其中一个工厂进行获取，完全不需要实例化任何产品对象。
+4. 抽象工厂（AbstractFactory）：定义了一个接口，这个接口包含了一组方法用来生产产品，所有的具体工厂都必须实现此接口。
 
 ### 反射
 
@@ -471,9 +499,9 @@ public static void main(String[] args) throws ClassNotFoundException {
    - 标准注解：@Override、@Deprecated、@SupressWarnings
    - 元注解(修饰注解的注解，通常用在注解的定义之上)：@Retention、@Target、@Inherited、@Documented
     @Target：定义注解的作用目标
-   @Retention：定义注解的生命周期，用于决定被该元注解修饰的注解是否显示在编译的文件中
-   @Inherited：是否允许子类继承该注解
-   @Documented：注解是否应当被包含在 JavaDoc 文档中
+    @Retention：定义注解的生命周期，用于决定被该元注解修饰的注解是否显示在编译的文件中
+    @Inherited：是否允许子类继承该注解
+    @Documented：注解是否应当被包含在 JavaDoc 文档中
    - 自定义注解(使用元注解实现)
 
 3. 自定义注解
@@ -593,8 +621,7 @@ public class AnnotationParser {
 }
 ```
 
-5. 注解的工作原理
-
+5. **注解的工作原理**
    - 通过键值对的形式为注解属性赋值
    - 编译器检查注解的使用范围，将注解信息写入元素属性表
    - 运行时 JVM 将 RUNTIME 的所有注解属性取出并最终存入 map 里（单个Class文件内所有的RUNTIME的注解而非整个项目的RUNTIME注解）
@@ -620,23 +647,23 @@ public class AnnotationParser {
    - 接口实现注入
    - 注解实现注入
 
-4. 依靠倒置原则、IoC、DI、IoC容器的关系
+4. 依赖倒置原则、IoC、DI、IoC容器的关系
 
-<img src="https://gitee.com/noah2021/blogImage/raw/master/img/image-20210306222705892.png" alt="image-20210306222705892" style="zoom: 67%;" />
+<img src="img/image-20210306222705892.png" alt="image-20210306222705892" style="zoom: 67%;" />
 
 5. 控制反转的例子
 
-   一个行李箱是由轮子-->地盘-->箱体-->行李箱构成，但是当轮子发生改变大小时，上层的结构都需要改变，这无疑是不可接受的
+   一个行李箱是由轮子-->底盘-->箱体-->行李箱构成，但是当轮子发生改变大小时，上层的结构都需要改变，这无疑是不可接受的
 
-<img src="https://gitee.com/noah2021/blogImage/raw/master/img/image-20210306222854369.png" alt="image-20210306222854369" style="zoom:67%;" />
+<img src="img/image-20210306222854369.png" alt="image-20210306222854369" style="zoom:67%;" />
 
 ​		依靠控制反转就可以很好地解决这个问题
 
-![](https://gitee.com/noah2021/blogImage/raw/master/img/image-20210306223245756.png)
+![](img/image-20210306223245756.png)
 
 ### 导图总结
 
-![image-20210306223552050](https://gitee.com/noah2021/blogImage/raw/master/img/image-20210306223552050.png)
+![image-20210306223552050](img/image-20210306223552050.png)
 
 ## 自研框架IoC容器的实现
 
