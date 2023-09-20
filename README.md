@@ -3,7 +3,7 @@
 
 本项目通过对Spring源码的学习与理解，完成了Spring框架的IOC、AOP和MVC功能模块的开发、Bean的生命周期等功能的开发。通过从 0 搭建一个较为完备的 Web 框架来提升框架设计能力，了解 Spring 框架的设计思路。
 
-项目分为下面两条主线，一条是自研 Spring 框架，源码放在`src/main/java/org/simpleframework`这个包下面（其中 java 包下面的 com 是一个 Web 项目的 Demo，主要用于测试自研框架的功能，而 demo 是实现自研源码过程中涉及的泛型、涉及模式、反射、注解的 demo ），另外一条主线是剖析 Spring 框架源码，源码需要自己去 Spring 官网 clone 到本地进行编译。
+项目分为下面两条主线，一条是自研 Spring 框架，源码放在`src/main/java/org/simpleframework`这个包下面（其中 java 包下面的 com 是一个 Web 项目的 Demo，主要用于测试自研框架的功能，而 demo 是实现自研源码过程中涉及的泛型、设计模式、反射、注解的 demo ），另外一条主线是剖析 Spring 框架源码，源码需要自己去 Spring 官网 clone 到本地进行编译。
 
 <img src="img/image-20210305092404064.png" style="zoom: 50%;" />
 
