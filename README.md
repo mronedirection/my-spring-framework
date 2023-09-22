@@ -1200,7 +1200,6 @@ public class DependencyInjectorTest {
 
 - 按部就班填充代码逻辑实现业务功能，每层逻辑都可无缝替换
 - OOP将业务程序分解成各个层次的对象，通过对象联动完成业务
-- OOP将业务程序分解成各个层次的对象，通过对象联动完成业务
 - 无法很好地处理分散在各业务里的通用系统需求
 
 系统需求程序员才去关心的需求：
@@ -1284,7 +1283,7 @@ Spring框架中可以使用Spring自带的AOP或者使用Aspectj实现切面；
 
 **在编译时就已经将接口、被代理类、代理类等确定下来**。在程序运行之前，代理类的.class文件就已经生成。
 
-静态代理的局限性：针对不同接口中同样的连接点，植入相同的逻辑，需要单独实现不同的代理类
+静态代理的**局限性**：针对不同接口中同样的连接点，植入相同的逻辑，需要单独实现不同的代理类
 
 **Demo**
 
@@ -1352,7 +1351,7 @@ public class ProxyDemo {
    - 根据读取的字节流，将代表的静态存储结构转换成动态数据结构
    - 生成一个代表该类的 Class 对象，作为方法区该类的数据访问入口
 
-2. 改进的切入点：根据一定的规则区改动或者生成新的字节流，将切面逻辑织入其中
+2. 改进的切入点：根据一定的规则去改动或者生成新的字节流，将切面逻辑织入其中
 
    - 行之有效的方法就是动态代理机制
    - 根据接口或者目标类，计算出代理类的字节码并加载到 JVM 中
@@ -1360,7 +1359,7 @@ public class ProxyDemo {
 3. JDK 动态代理
 
    - 动态代理并没有实际的 class 文件，而是在**程序运行时生成类的字节码文件**并加载到 JVM 中
-   - 要求目标类【被代理的类】ToCPaymentImpl必须实现接口
+   - **要求目标类【被代理的类】ToCPaymentImpl必须实现接口**
    - 并不要求代理类【代理对象】去实现接口，所以可以复用代理对象的逻辑
    - Demo实现
 
@@ -1416,7 +1415,7 @@ public class ProxyDemo {
 
 1. 代码生成库Cglib(Code Generation Library) 动态代理
 
-    - 不要求被代理类实现接口
+    - **不要求被代理类实现接口**
     - 内部主要封装了ASM Java字节码操控框架
     - 动态生成子类以覆盖非 final 的方法，绑定钩子回调自定义拦截器
     - Demo实现
@@ -1785,31 +1784,70 @@ public class ControllerTimeCalculatorAspect extends DefaultAspect {
     }
 }
 /*AspectWeaverTest.java*/
-public class AspectWeaverTest {
+public class AspectWeaverSpringAOPTest {
+
+    //需要先进行AOP操作，植入切面类，生成动态代理对象，替换容器中的原始类
+    //再进行IOC操作，否则注入的对象是原始类对象，而不是代理类对象，出现错误
     @DisplayName("织入通用逻辑测试：doAop")
     @Test
     public void doAopTest(){
+        // 初始化容器
         BeanContainer beanContainer = BeanContainer.getInstance();
-        beanContainer.loadBeans("com.noah2021");
-        new AspectWeaver().doAop();
+        // 加载Bean
+        beanContainer.loadBeans("com.pro");
+        // Aop织入
+        new AspectWeaverSpringAOP().doAop();
+        // 依赖注入
         new DependencyInjector().doIoc();
-        HeadLineOperationController headLineOperationController =
+
+        HeadLineOperationController controller =
                 (HeadLineOperationController) beanContainer.getBean(HeadLineOperationController.class);
-        headLineOperationController.addHeadLine(null, null);
+
+        controller.addHeadLine(null, null);
     }
 }
 ```
 3. 待改进的地方
-	- Aspect 只支持对某个标签标记的类进行横切逻辑的织入
+	- Aspect 只支持对某个标签标记的类进行横切逻辑的织入，无法进行细粒度的植入
 	- 需要披上 AspectJ 的外衣
+
+### 如何改进自研框架
+
+#### 参考SpringAOP的发展史：
+
+- SpringAOP1.0是由Spring自研的
+- 使用起来不是很方便，需要实现各种各样的接口，并继承指定的类
+- SpringAOP2.0集成了AspectJ，复用AspectJ的语法树
+
+#### AspectJ框架
+
+##### AspectJ框架提供了完整的AOP解决方案，是AOP的Java实现版本
+
+- 定义切面语法以及切面语法的解析机制
+- 提供了强大的织入工具
+
+##### AspectJ 框架织入时机：静态织入和 LTW
+
+- 编译时织入（静态织入）：利用ajc编译器而不是Javac编译器，将源文件编译成class文件，并将切面逻辑织入到class文件
+- 编译后织入（静态织入）：先利用Javac将源文件编译成class文件，再利用ajc将切面逻辑织入到class文件
+- 类加载期织入（动态织入，Load Time Weaving）：利用java agent，在类加载的时候织入切面逻辑
+
+#### SpringAOP2.0
+
+仅仅用到了AspectJ的切面语法，并没有使用ajc编译工具
+
+- 避免增加用户的学习成本
+- 只是默认不使用，如果想用ajc还是可以引入的
+- 织入机制沿用自己的CGLIB和JDK动态代理机制
 
 ### 实现自研框架的AOP 2.0
 
-AspectJ 框架织入时机：静态织入和 LTW
+#### 折衷方案改进框架里的AOP
 
-编译时织入（静态织入）：利用ajc编译器而不是Javac编译器，将源文件编译成class文件，并将切面逻辑织入到class文件
-编译后织入（静态织入）：先利用Javac将源文件编译成class文件，再利用ajc将切面逻辑织入到class文件
-类加载期织入（动态织入，Load Time Weaving）：利用java agent，在类加载的时候织入切面逻辑
+使用最小的改造成本，换取尽可能大的收益---理清核心诉求
+
+- 让Pointcut更加灵活
+- 调研结果∶只需要**引入AspectJ的切面表达式和相关的定位解析机制**
 
 1. 引入 aspectjrt 和 aspectjweaver 的依赖，由于 aspectjweaver 包含 aspectjrt，所以引入 aspectjweaver 即可
 2. 核心目标

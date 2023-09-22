@@ -50,7 +50,7 @@ public class AspectWeaverSpringAOP {
 //    }
 //
 //    /**
-//     * 对目标类进行织入
+//     * 对目标类织入Aspect列表，生成动态代理类对象，代替容器中的原始类对象
 //     *
 //     * @param category    目标织入注解类型
 //     * @param aspectInfos 该类型下对应的横切类列表
@@ -64,7 +64,9 @@ public class AspectWeaverSpringAOP {
 //        } else {
 //            // 2.遍历被代理类，分别为每个被代理类生成动态代理
 //            for (Class<?> targetClass : classSet) {
+//                //Cglib需要的方法拦截器
 //                AspectListExecutor aspectListExecutor = new AspectListExecutor(targetClass, aspectInfos);
+//                //创建动态代理类
 //                Object proxyBean = ProxyCreator.createProxy(targetClass, aspectListExecutor);
 //                // 3.将动态代理对象添加到容器中，取代被代理类实例
 //                beanContainer.addBean(targetClass, proxyBean);

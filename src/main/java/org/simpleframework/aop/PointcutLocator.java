@@ -29,7 +29,7 @@ public class PointcutLocator {
 
     /**
      * 根据传入的Class对象，判断其是否为Aspect横切类的目标代理类，即匹不匹配pointcut表达式（初筛）
-     * 判断传入的Class对象是否是Aspect的目标代理类，即是否匹配pointcut表达式（精筛）
+     *
      * @param targetClass
      * @return
      */

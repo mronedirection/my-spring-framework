@@ -3,7 +3,7 @@ package org.simpleframework.aop.aspect;
 import java.lang.reflect.Method;
 
 /**
- * 供外部使用的横切逻辑骨架
+ * 供外部使用的横切逻辑骨架，类似于Advice
  * @author RenHao
  * @create 2023-08-17 16:08
  */

@@ -11,6 +11,7 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 
 /**
+ * 引入 AspectJ的切面表达式和相关的定位解析机制，让 pointcut 更加灵活
  * @author RenHao
  * @create 2023-08-17 17:46
  */
@@ -32,7 +33,7 @@ public class AspectWeaverAspectj {
         // 3.遍历容器里的类
         Set<Class<?>> classSet = beanContainer.getClasses();
         for (Class<?> targetClass : classSet) {
-            // 排除bean里的AspectClass
+            // 排除bean里的AspectClass:不能给Aspect类植入切面逻辑，否则陷入死循环
             if (targetClass.isAnnotationPresent(Aspect.class)) {
                 continue;
             }
@@ -92,14 +93,16 @@ public class AspectWeaverAspectj {
 
     /**
      * 尝试进行Aspect的织入
+     * 生成动态代理对象替换容器中的原始被代理目标对象
      * @param roughMatchedAspectList
      * @param targetClass
      */
     private void wrapIfNecessary(List<AspectInfo> roughMatchedAspectList, Class<?> targetClass) {
-        // 创建动态代理对象
+        //Cglib创建动态代理对象需要的方法拦截器
         AspectListExecutor executor = new AspectListExecutor(targetClass, roughMatchedAspectList);
+        // 创建动态代理对象
         Object proxyBean = ProxyCreator.createProxy(targetClass, executor);
-        // 替换被代理的对象
+        // 将动态代理对象添加到容器中，取代被代理类实例
         beanContainer.addBean(targetClass, proxyBean);
     }
 

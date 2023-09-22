@@ -17,7 +17,7 @@ public class AspectWeaverAspectjTest {
         // 初始化容器
         BeanContainer beanContainer = BeanContainer.getInstance();
         // 加载Bean
-        beanContainer.loadBeans("com.imooc");
+        beanContainer.loadBeans("com.pro");
         // Aop织入
         new AspectWeaverAspectj().doAop();
         // 依赖注入

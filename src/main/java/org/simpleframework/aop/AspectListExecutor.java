@@ -60,10 +60,10 @@ public class AspectListExecutor implements MethodInterceptor {
     @Override
     public Object intercept(Object proxy, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
         Object returnValue = null;
-        // AspectJ的精筛
+        // AspectJ的精筛:对初筛列表进行精筛
         collectAccurateMatchedAspectList(method); //使用springaop不需要此行
         if(ValidationUtil.isEmpty(sortedAspectInfoList)){
-            // 如果精筛后没有需要执行的切面，就执行被代理类的原方法即可
+            // 如果精筛后没有需要执行的切面，就执行被代理类 的原方法即可
             returnValue = methodProxy.invokeSuper(proxy, args);
             return returnValue;
         }

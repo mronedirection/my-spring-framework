@@ -12,8 +12,8 @@ import java.lang.reflect.Method;
  * @create 2023-08-17 20:32
  */
 @Slf4j
-@Aspect(pointcut = "execution(* com.imooc.controller.frontend..*.*(..))")
-//@Aspect(value = Controller.class)
+@Aspect(pointcut = "execution(* com.pro.controller.frontend..*.*(..))")
+//@Aspect(value = Controller.class) //将切面类植入Controller业务类中
 @Order(0)
 public class ContollerTimeCalculatorAspect extends DefaultAspect {
     // 记录时间
