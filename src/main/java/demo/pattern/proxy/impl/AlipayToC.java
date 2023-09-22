@@ -2,6 +2,10 @@ package demo.pattern.proxy.impl;
 
 import demo.pattern.proxy.ToCPayment;
 
+/**
+ * 代理类
+ * 代理类持有具体类的实例，代为执行具体类实例方法
+ */
 public class AlipayToC implements ToCPayment {
     ToCPayment toCPayment;
     public AlipayToC(ToCPayment toCPayment){

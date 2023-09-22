@@ -4,6 +4,7 @@ import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 
 /**
+ * 使用Cglib创建动态代理对象
  * @author RenHao
  * @create 2023-08-17 17:12
  */

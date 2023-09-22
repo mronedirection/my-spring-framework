@@ -17,7 +17,7 @@ public class DependencyInjectorTest {
     @Test
     public void doIocTest(){
         BeanContainer beanContainer = BeanContainer.getInstance();
-        beanContainer.loadBeans("com.imooc");
+        beanContainer.loadBeans("com.pro");
         Assertions.assertEquals(true, beanContainer.isLoaded());
         MainPageController mainPageController = (MainPageController)beanContainer.getBean(MainPageController.class);
         Assertions.assertEquals(true, mainPageController instanceof MainPageController);

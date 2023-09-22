@@ -41,6 +41,7 @@ public class BeanContainer {
         return ContainerHolder.HOLDER.instance;
     }
 
+    //定义内部枚举类，即使使用反射中的爆破，也可以保证单例
     private enum ContainerHolder{
         HOLDER;
         private BeanContainer instance;

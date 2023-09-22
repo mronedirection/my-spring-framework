@@ -2,6 +2,9 @@ package demo.pattern.proxy.impl;
 
 import demo.pattern.proxy.ToBPayment;
 
+/**
+ * 代理类
+ */
 public class AlipayToB implements ToBPayment {
     ToBPayment toBPayment;
 

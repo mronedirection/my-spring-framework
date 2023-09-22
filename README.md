@@ -834,6 +834,8 @@ class com.noah2021.entity.dto.Result
 
 - 初始化
 
+  定义内部枚举类，即使使用反射中的爆破，也可以保证单例；
+
 ```java
 /*BeanContainer.java*/
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -854,6 +856,8 @@ public class BeanContainer {
 ```
 
 - 保存Class对象及其实例的载体
+
+  使用ConcurrentHashMap**支持高并发更新与查询**，保证高并发情况下的数据一致性；
 
 ```java
 /*BeanContainer.java*/
@@ -1156,42 +1160,55 @@ public class DependencyInjector {
 - 依赖注入的使用(添加注解)并测试
 
 
-    /*HeadLineShopCategoryCombineServiceImpl2.java*/
-    @Service
-    public class HeadLineShopCategoryCombineServiceImpl2 implements HeadLineShopCategoryCombineService {
-        @Override
-        public Result<MainPageInfoDTO> getMainPageInfo() {
-            return null;
-        }
+```java
+/*HeadLineShopCategoryCombineServiceImpl2.java*/
+@Service
+public class HeadLineShopCategoryCombineServiceImpl2 implements HeadLineShopCategoryCombineService {
+    @Override
+    public Result<MainPageInfoDTO> getMainPageInfo() {
+        return null;
     }
-    /*DependencyInjectorTest.java*/
-    public class DependencyInjectorTest {
-        @DisplayName("依赖注入doIoc")
-        @Test
-        public void doIocTest(){
-            BeanContainer beanContainer = BeanContainer.getInstance();
-            beanContainer.loadBeans("com.noah2021");
-            Assertions.assertEquals(true, beanContainer.isLoaded());
-            MainPageController mainPageController = (MainPageController)beanContainer.getBean(MainPageController.class);
-            Assertions.assertEquals(true, mainPageController instanceof MainPageController);
-            Assertions.assertEquals(null, mainPageController.getHeadLineShopCategoryCombineService());
-            new DependencyInjector().doIoc();
-            Assertions.assertNotEquals(null, mainPageController.getHeadLineShopCategoryCombineService());
-            Assertions.assertEquals(true, mainPageController.getHeadLineShopCategoryCombineService() instanceof HeadLineShopCategoryCombineServiceImpl1);
-            Assertions.assertEquals(false, mainPageController.getHeadLineShopCategoryCombineService() instanceof HeadLineShopCategoryCombineServiceImpl2);
-        }
+}
+/*DependencyInjectorTest.java*/
+public class DependencyInjectorTest {
+    @DisplayName("依赖注入doIoc")
+    @Test
+    public void doIocTest(){
+        BeanContainer beanContainer = BeanContainer.getInstance();
+        beanContainer.loadBeans("com.noah2021");
+        Assertions.assertEquals(true, beanContainer.isLoaded());
+        MainPageController mainPageController = (MainPageController)beanContainer.getBean(MainPageController.class);
+        Assertions.assertEquals(true, mainPageController instanceof MainPageController);
+        Assertions.assertEquals(null, mainPageController.getHeadLineShopCategoryCombineService());
+        new DependencyInjector().doIoc();
+        Assertions.assertNotEquals(null, mainPageController.getHeadLineShopCategoryCombineService());
+        Assertions.assertEquals(true, mainPageController.getHeadLineShopCategoryCombineService() instanceof HeadLineShopCategoryCombineServiceImpl1);
+        Assertions.assertEquals(false, mainPageController.getHeadLineShopCategoryCombineService() instanceof HeadLineShopCategoryCombineServiceImpl2);
     }
+}
+```
 
 ### 导图总结
 
-![image-20210307183721519](https://gitee.com/noah2021/blogImage/raw/master/img/image-20210307183721519.png)
+![image-20210307183721519](img/image-20210307183721519.png)
 
 ## 自研框架AOP的实现
 
-### 自上而下从左到右
+### 编程思想：自上而下 -> 从左到右
 
-容器是 OOP 的高级工具，以低耦合低侵入的方式打通从上到下的开发通道，但不擅长从左到右的系统需求会增加维护成本且破坏低耦合
-系统需求：程序员才去关心的需求，比如：添加日志信息，系统权限校验
+容器是 OOP 的高级工具，以低耦合低侵入的方式打通从上到下的开发通道：
+
+- 按部就班填充代码逻辑实现业务功能，每层逻辑都可无缝替换
+- OOP将业务程序分解成各个层次的对象，通过对象联动完成业务
+- OOP将业务程序分解成各个层次的对象，通过对象联动完成业务
+- 无法很好地处理分散在各业务里的通用系统需求
+
+系统需求程序员才去关心的需求：
+
+- 添加日志信息:为每个方法添加统计时间
+- 添加系统权限校验∶针对某些方法进行限制
+- OOP下必须得为每个方法都添加通用的逻辑工作，增加维护成本
+
 关注点分离原则：不同的问题交给不同的部分去解决，每部分专注解决自己的问题
 在Spring源码里创建一个 AopDemo 需要往 springdemo 的 build.gradle 的 dependencies 模块添加 aspects 的相关依赖`compile(project(":spring-aspects"))`
 
@@ -1200,20 +1217,31 @@ public class DependencyInjector {
 - 切面 Aspect :把通知应用到切入点的过程，将横切关注点逻辑进行模块化封装的实体对象
 - 通知 Advice :好比是 Class 里面的方法，还定义了织入逻辑的时机
 - 连接点 Joinpoint :类里面可以被增强的方法，允许使用 Advice 的地方
-- 切入点 pointcut :实际被增强的方法
 - SpringAOP 默认只支持方法级别的 Joinpoint
+- 切入点 pointcut :定义一系列规则对Joinpoint进行筛选，实际被增强的方法
+- 目标对象Target :符合Pointcut条件，要被织入横切逻辑的对象
+
+### Advice的种类：
+
+- BeforeAdvice :在JoinPoint前被执行的Advice
+- AfterAdvice :好比try..catch..finaly里面的finaly
+- AfterReturningAdvice :在Joinpoint执行流程正常返回后被执行
+- AfterThrowingAdvice : Joinpoint执行过程中抛出异常才会触发
+- AroundAdvice :在Joinpoint前和后都执行，最常用的Advice
 
 ### Aspect的执行顺序
 
 单个 Aspect 的执行顺序
 
-<img src="https://gitee.com/noah2021/blogImage/raw/master/img/image-20210310185418129.png" alt="image-20210310185418129" style="zoom: 80%;" />
+<img src="img/image-20210310185418129.png" alt="image-20210310185418129" style="zoom: 80%;" />
 
 多个 Aspect 的执行顺序
 
-<img src="https://gitee.com/noah2021/blogImage/raw/master/img/image-20210310185454340.png" alt="image-20210310185454340" style="zoom: 80%;" />
+<img src="img/image-20210310185454340.png" alt="image-20210310185454340" style="zoom: 80%;" />
 
 ### AOP操作(前提)
+
+Spring框架中可以使用Spring自带的AOP或者使用Aspectj实现切面；
 
 （1）Spring 框架中一般都是基于AspectJ实现AOP操作
 
@@ -1226,7 +1254,7 @@ public class DependencyInjector {
 
 （3）项目里引入相关依赖
 
-![image-20201014154039308](https://gitee.com/noah2021/blogImage/raw/master/img/e6884df61d060b4a952ea36d2662ab0d.png)
+![image-20201014154039308](img/e6884df61d060b4a952ea36d2662ab0d.png)
 
 （4）切入点表达式
 
@@ -1249,7 +1277,17 @@ public class DependencyInjector {
       execution(* com.zhh.dao.*.*(..))
 
 ### 代理模式
+
+代理模式最主要的就是有一个公共接口（ToCPayment），一个具体的被代理类（ToCPaymentImpl）以及一个代理类（AlipayToC），代理类持有被代理类的实例，代为执行被代理类实例的方法。用于在真实的实现前后添加一部分通用逻辑。
+
+**静态代理模式：**
+
+**在编译时就已经将接口、被代理类、代理类等确定下来**。在程序运行之前，代理类的.class文件就已经生成。
+
+静态代理的局限性：针对不同接口中同样的连接点，植入相同的逻辑，需要单独实现不同的代理类
+
 **Demo**
+
 ```java
 /*ToCPayment.java*/
 public interface ToCPayment {
@@ -1294,67 +1332,90 @@ public class ProxyDemo {
 付钱给慕课网
 ```
 原理很简单，这里只说它的缺点：
-对应不同的目标对象，针对不一样的目标对象类型我们都要实现一个代理对象，代理对象的横切逻辑都是一样的，可是还是得再创建一遍代理类。
-针对同样的连接点，不同的接口还要创建出不同的代理类，这样维护成本会呈指数级增长
+
+1. 要求目标类ToCPaymentImpl和代理类AlipayToC都实现接口ToCPayment；
+
+2. 横切逻辑beforePay()和afterPay()不能复用；
+
+对应不同的目标对象ToBPaymentImpl和ToCPaymentImpl，针对不一样的目标对象类型我们都要实现一个代理对象，代理对象的横切逻辑beforePay()和afterPay()都是一样的，可是还是得再创建一遍代理类；
+针对同样的连接点，不同的接口还要创建出不同的代理类，这样维护成本会呈指数级增长；
+
+### SpringAOP的实现原理之JDK动态代理
+
+**寻求改进：动态代理**
+
+目的：1.实现切面逻辑的复用；2. 针对不同的目标类，不用创建不同的代理类；
 
 1. 朔源ClassLoader
-    - 通过带有包名的类来获取对应 Class 文件的二进制字节流
-    - 根据读取的字节流，将代表的静态存储结构转换成动态数据结构
-    - 生成一个代表该类的 Class 对象，作为方法区该类的数据访问入口
+
+   - 通过带有包名的类来获取对应 Class 文件的二进制字节流
+   - 根据读取的字节流，将代表的静态存储结构转换成动态数据结构
+   - 生成一个代表该类的 Class 对象，作为方法区该类的数据访问入口
+
 2. 改进的切入点：根据一定的规则区改动或者生成新的字节流，将切面逻辑织入其中
-    - 行之有效的方法就是动态代理机制
-    - 根据接口或者目标类，计算出代理类的字节码并加载到 JVM 中
+
+   - 行之有效的方法就是动态代理机制
+   - 根据接口或者目标类，计算出代理类的字节码并加载到 JVM 中
+
 3. JDK 动态代理
-    - 动态代理并没有实际的 class 文件，而是在程序运行时生成类的字节码文件并加载到 JVM 中
-    - 要求【被代理的类】必须实现接口
-    - 并不要求【代理对象】去实现接口，所以可以复用代理对象的逻辑
-    - Demo实现
-    ```java
-    /*AlipayInvocationHandler.java*/
-    public class AlipayInvocationHandler implements InvocationHandler {
-        private Object target;
-    
-        public AlipayInvocationHandler(Object target) {
-            this.target = target;
-        }
-    
-        @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            Before();
-            Object result = method.invoke(target, args);
-            After();
-            return result;
-        }
-        private void After() {
-            System.out.println("付钱给慕课网");
-        }
-        private void Before() {
-            System.out.println("从招行取款");
-        }
-    }
-    /*JdkDynamicProxyUtil.java*/
-    public class JdkDynamicProxyUtil {
-        public static <T>T newProxyInstance(Object target, InvocationHandler h){
-            ClassLoader classLoader = target.getClass().getClassLoader();
-            Class<T>[] interfaces = (Class<T>[]) target.getClass().getInterfaces();
-            return (T)Proxy.newProxyInstance(classLoader,interfaces,h);
-        }
-    }
-    /*ProxyDemo.java*/
-    //只需要写一个实现接口的被代理类，省略了之前AlipayToC类的具体实现，提高代码复用
-    public class ProxyDemo {
-        public static void main(String[] args) {
-            /*ToCPayment toCProxy = new AlipayToC(new ToCPaymentImpl());
-            toCProxy.pay();*/
-            ToCPaymentImpl toCPayment = new ToCPaymentImpl();
-            AlipayInvocationHandler h = new AlipayInvocationHandler(toCPayment);
-            ToCPayment toCProxy = JdkDynamicProxyUtil.newProxyInstance(toCPayment, h);
-            toCProxy.pay();
-        }
-    }
-    //控制台显示与静态代理一致
-    ```
-4. Cglib(Code Generation Library) 动态代理
+
+   - 动态代理并没有实际的 class 文件，而是在**程序运行时生成类的字节码文件**并加载到 JVM 中
+   - 要求目标类【被代理的类】ToCPaymentImpl必须实现接口
+   - 并不要求代理类【代理对象】去实现接口，所以可以复用代理对象的逻辑
+   - Demo实现
+
+   ```java
+   /*AlipayInvocationHandler.java*/
+   public class AlipayInvocationHandler implements InvocationHandler {
+       private Object target;
+   
+       public AlipayInvocationHandler(Object target) {
+           this.target = target;
+       }
+   
+       @Override
+       public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+           Before();
+           Object result = method.invoke(target, args);
+           After();
+           return result;
+       }
+       private void After() {
+           System.out.println("付钱给慕课网");
+       }
+       private void Before() {
+           System.out.println("从招行取款");
+       }
+   }
+   /*JdkDynamicProxyUtil.java*/
+   public class JdkDynamicProxyUtil {
+       public static <T>T newProxyInstance(Object target, InvocationHandler h){
+           ClassLoader classLoader = target.getClass().getClassLoader();
+           Class<T>[] interfaces = (Class<T>[]) target.getClass().getInterfaces();
+           return (T)Proxy.newProxyInstance(classLoader,interfaces,h);
+       }
+   }
+   /*ProxyDemo.java*/
+   //只需要写一个实现接口的被代理类，省略了之前AlipayToC类的具体实现，提高代码复用
+   public class ProxyDemo {
+       public static void main(String[] args) {
+           /*ToCPayment toCProxy = new AlipayToC(new ToCPaymentImpl());
+           toCProxy.pay();*/
+           ToCPaymentImpl toCPayment = new ToCPaymentImpl();
+           AlipayInvocationHandler h = new AlipayInvocationHandler(toCPayment);
+           ToCPayment toCProxy = JdkDynamicProxyUtil.newProxyInstance(toCPayment, h);
+           toCProxy.pay();
+       }
+   }
+   //控制台显示与静态代理一致
+   ```
+
+   
+
+### SpringAOP的实现原理之CGLIB动态代理
+
+1. 代码生成库Cglib(Code Generation Library) 动态代理
+
     - 不要求被代理类实现接口
     - 内部主要封装了ASM Java字节码操控框架
     - 动态生成子类以覆盖非 final 的方法，绑定钩子回调自定义拦截器
@@ -1405,22 +1466,30 @@ public class ProxyDemo {
         }
     }
     ```
-5. JDK动态代理和Cglib
-    - JDK动态代理
-        - 实现机制：基于反射机制实现，要求业务类必须实现接口
-        - JDK原生，在 JVM 中运行较为可靠
-        - 平滑支持 JDK 版本的升级
-    - Cglib
-        - 实现机制：基于 ASM 机制实现，生成业务类的子类作为代理类 
-        - 被代理类无需实现接口，能实现代理类的无侵入
-    - 默认策略：Bean 实现了接口则用 JDK，否则使用 Cglib
-    
+
+2. JDK动态代理和Cglib的区别
+
+    JDK动态代理机制是通过让动态代理类来实现和被代理类同样的接口，从而在运行中去替代被代理类来进行工作；
+
+    - 实现机制不同：
+      - JDK动态代理基于反射机制实现，要求被代理类必须实现接口
+      - Cglib基于 ASM 机制实现，通过生成被代理类的子类作为代理类，被代理类不需要实现接口
+
+    - 两者各有优势：
+      - JDK动态代理的优势在于JDK原生，不需要额外引入依赖，在JVM 中运行较为可靠，平滑支持JDK版本的升级，而Cglib可能需要更新，才能在新版JDK中使用 
+      - Cglib动态代理的优势在于被代理类无需实现接口，能实现代理类的无侵入
+
+    SpringAOP的底层机制是Cglib和JDK动态代理共存，如果Bean 实现了接口则用 JDK，否则使用 Cglib；
+
 ### 实现自研框架的AOP 1.0
-使用 Cglib 来实现：不需要业务类实现接口，相对灵活
+使用 Cglib 来实现：**不需要业务类实现接口，相对灵活**
 - 解决标记的问题，定义横切逻辑的骨架
 - 定义Aspect横切逻辑以及被代理方法的执行顺序
 - 将横切逻辑织入到被代理的对象以生成动态代理对象
 - 这是1.0版本，所以和你之前用的Spring AOP不一致很正常，接着做下去就是了
+
+**解决横切逻辑的标记问题以及定义Aspect骨架**
+
 1. 定义与横切逻辑相关的注解
 ```java
 /*Aspect.java*/
@@ -1475,6 +1544,8 @@ public abstract class DefaultAspect {
 }
 ```
 ------
+
+**实现Aspect横切逻辑以及被代理方法的定序执行**
 
 1. 创建 MethodInterceptor 的实现类 AspectListExecutor
 2. 定义必要的成员变量：被代理的类以及Aspect列表
@@ -1581,7 +1652,11 @@ public class AspectListExecutorTest {
 }
 ```
 5. 实现 AspectListExecutor.java 中 interceptor 的具体逻辑
-6. 生成动态代理对象的实现类
+   1. 按照order的顺序升序执行完所有Aspect的before方法
+   2. 执行被代理类的方法
+   3. 如果被代理方法正常返回，则按照order的顺序降序执行完所有Aspect的afterReturning方法
+   4. 如果被代理方法抛出异常，则按照order的顺序降序执行完所有Aspect的afterThrowing方法
+6. 使用Cglib动态代理生成动态代理类
 ```java
 /*ProxyCreateor.java*/
 public class ProxyCreateor {
@@ -1591,6 +1666,8 @@ public class ProxyCreateor {
 }
 ```
 ------
+
+**将横切逻辑织入到被代理的对象以生成动态代理对象**
 
 1. 织入 AOP
    需要在 BeanContainner 类的 BEAN_ANNOTATION 中加上 Aspect.class

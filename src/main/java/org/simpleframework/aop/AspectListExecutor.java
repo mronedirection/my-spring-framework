@@ -13,6 +13,9 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * Cglib动态代理
+ * 创建 MethodInterceptor 的实现类 AspectListExecutor
+ * 实现 Aspect 横切逻辑以及被代理对象方法的定序执行
  * @author RenHao
  * @create 2023-08-17 16:20
  */

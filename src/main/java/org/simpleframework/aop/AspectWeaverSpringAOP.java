@@ -11,6 +11,7 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 
 /**
+ * 将横切逻辑织入到被代理的对象以生成动态代理对象**
  * AOP1.0:
  * 使用 Cglib 来实现：不需要业务类实现接口，相对灵活
  * @author RenHao
@@ -102,7 +103,7 @@ public class AspectWeaverSpringAOP {
 //    }
 //
 //    //框架中一定要遵守给Aspect类添加@Aspect和@Order标签的规范，同时，必须继承自DefaultAspect.class
-//    //此外，@Aspect的属性值不能是它本身
+//    //此外，@Aspect的属性值不能是它本身，即切面类不能植入切面类本身，否则陷入死循环
 //    private boolean verifyAspect(Class<?> aspectClass) {
 //        return aspectClass.isAnnotationPresent(Aspect.class) &&
 //                aspectClass.isAnnotationPresent(Order.class) &&
