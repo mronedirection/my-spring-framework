@@ -16,6 +16,7 @@ public class ModelAndView {
     @Getter
     private Map<String, Object> model = new HashMap<>();
 
+    //响应请求的视图路径
     public ModelAndView setView(String view){
         this.view = view;
         return this;

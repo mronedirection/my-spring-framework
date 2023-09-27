@@ -29,6 +29,8 @@
 
 ## 为什么要使用IOC？
 
+
+
 ## 什么是循环依赖？
 
 A对象在创建的过程中，需要依赖注入B对象，但是B对象还未被创建，于是需要先去创建B对象，但是在创建B对象的过程中又需要注入A对象，AB互相等待对方先创建完成，这样就构成了一个死循环，AB相互依赖的关系被称为**循环依赖**。
@@ -189,13 +191,69 @@ Weaving：把切面应用到目标对象来创建新的 advised 对象的过程�
 
 具体实现流程为：
 
-1. 创建实现HttpServlet的中央调度器DispatcherServlet拦截所有请求，在init方法中对容器进行初始化，以及初始化请求处理器责任链，以责任链的模式执行注册的请求处理器；在service方法中顺序执行请求处理器责任链中的请求，并对处理结果进行渲染；
+1. HTTP连接重构：
 
-2. 请求处理器主要包括PreRequestProcessor进行请求预处理，StaticResourceRequestProcessor进行静态资源请求处理，JspRequestProcessor对访问jsp资源的请求进行处理，以及最关键的ControllerRequestProcessor，负责针对特定请求，解析请求里的参数及对应的值，并赋值给Controller方法的参数，选择匹配的Controller方法进行处理，同时选择合适的Render，为后续请求处理结果的渲染做准备；
+   **创建**实现HttpServlet的**中央调度器**DispatcherServlet**拦截所有请求**，
 
-3. 对结果进行渲染相关的类ResultRender，主要包括内部异常渲染器InternalErrorResultRender，资源找不到时使用的渲染器ResourceNotFoundResultRender，Json渲染器JsonResultRender，以及页面渲染器ViewResultRender，将请求处理器处理完后的结果显示到指定的视图上；
+   在init方法中对容器进行初始化，以及初始化请求处理器责任链，**以责任链的模式执行注册的请求处理器**；
+
+   在service方法中顺序执行请求处理器责任链中的请求，并对处理结果进行渲染；
+
+2. 实现请求处理器矩阵：
+
+   请求处理器主要包括PreRequestProcessor进行**请求预处理**；
+
+   StaticResourceRequestProcessor进行**静态资源请求处理**；
+
+   JspRequestProcessor对访问**jsp资源**的**请求**进行**处理**；
+
+   以及最关键的ControllerRequestProcessor，负责**针对特定请求**，解析请求中的参数，将其**传递给匹配的Controller方法进行处理**；
+
+3. 实现结果渲染矩阵：
+
+   对结果进行渲染相关的类ResultRender，主要包括
+
+   **内部异常渲染器**InternalErrorResultRender，
+
+   **资源找不到**时使用的**渲染器**ResourceNotFoundResultRender，
+
+   **Json渲染器**JsonResultRender，
+
+   以及**页面渲染器**ViewResultRender，将请求处理器处理完后的结果显示到指定的视图上；
+
+执行原理：
+
+1. 当发起请求时首先被中央调度器DispatcherServlet**拦截请求**
+2. 中央调度器找到请求对应的**实际处理器**
+3. 实际处理器根据业务逻辑**处理请求**，并将处理结果**响应给中央调度器**
+4. 中央调度器将处理结果**传入视图**中进行渲染
+5. 最后，中央调度器将渲染后的视图**返回响应**
+
+## 什么是MVC架构？与Spring MVC的关系？
+
+经典MVC模式中：
+
+**M即model模型是指业务模型，模型指企业数据（即实体类）和业务规则**；
+
+**V即View视图**是指用户看到并与之交互的界面；
+
+**C即controller控制器**是指控制器接受用户的输入并调用模型和视图去完成用户的需求，控制器本身不输出任何东西和做任何处理。它只是接收请求并决定调用哪个模型构件去处理请求，然后再确定用哪个视图来显示返回的数据。
+
+springMVC框架是基于Java的**实现了MVC框架模式**的请求驱动类型的轻量级框架。围绕DispatcherServlet设计，将请求分发到不同的处理器，具体原理为：
+
+当发起请求时被前端控制器DispatcherServlet**拦截请求**，
+
+前端控制器找到请求对应的**实际控制器**，
+
+实际控制器根据业务逻辑**处理请求**，并将处理结果**响应给中央控制器**，
+
+中央控制器将处理结果**传入视图**View中进行渲染，
+
+中央控制器将渲染后的视图**返回响应**。
 
 ## 为什么要使用MVC架构？
+
+**使用MVC的目的是将M和V的实现代码分离**，从而使同一个程序可以使用不同的表现形式，实现model层代码的复用，同时方便扩展和维护。比如一批统计数据可以分别用柱状图或者饼状图来表示。
 
 # 四、Spring相关问题
 
