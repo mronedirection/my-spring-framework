@@ -1651,10 +1651,10 @@ public class AspectListExecutorTest {
 }
 ```
 5. 实现 AspectListExecutor.java 中 interceptor 的具体逻辑
-   1. 按照order的顺序升序执行完所有Aspect的before方法
+   1. 按照order的顺序**升序执行**完所有Aspect的**before方法**
    2. 执行被代理类的方法
-   3. 如果被代理方法正常返回，则按照order的顺序降序执行完所有Aspect的afterReturning方法
-   4. 如果被代理方法抛出异常，则按照order的顺序降序执行完所有Aspect的afterThrowing方法
+   3. 如果被代理方法正常返回，则按照order的顺序**降序执行**完所有Aspect的**afterReturning方法**
+   4. 如果被代理方法抛出异常，则按照order的顺序**降序执行**完所有Aspect的**afterThrowing方法**
 6. 使用Cglib动态代理生成动态代理类
 ```java
 /*ProxyCreateor.java*/
@@ -1807,8 +1807,8 @@ public class AspectWeaverSpringAOPTest {
     }
 }
 ```
-3. 待改进的地方
-	- Aspect 只支持对某个标签标记的类进行横切逻辑的织入，无法进行细粒度的植入
+3. AOP1.0待改进的地方
+	- Aspect 只支持对某个标签标记的类进行横切逻辑的织入，**无法进行细粒度的植入**
 	- 需要披上 AspectJ 的外衣
 
 ### 如何改进自研框架
@@ -1985,11 +1985,11 @@ public class AspectWeaver {
 
 ### 导图总结
 
-![image-20210312190231318](https://gitee.com/noah2021/blogImage/raw/master/img/image-20210312190231318.png)
+![image-20210312190231318](img/image-20210312190231318.png)
 
-![image-20210312190214036](https://gitee.com/noah2021/blogImage/raw/master/img/image-20210312190214036.png)
+![image-20210312190214036](img/image-20210312190214036.png)
 
-![image-20210312190249626](https://gitee.com/noah2021/blogImage/raw/master/img/image-20210312190249626.png)
+![image-20210312190249626](img/image-20210312190249626.png)
 
 ## 自研框架MVC的实现
 
@@ -2001,7 +2001,7 @@ public class AspectWeaver {
 - 依赖容器，建议并维护 Controller 方法与请求的映射
 - 用合适的 Controller 方法去处理特定的请求
 
-<img src="https://gitee.com/noah2021/blogImage/raw/master/img/image-20210312220542829.png" alt="image-20210312220542829" style="zoom:67%;" />
+<img src="img/image-20210312220542829.png" alt="image-20210312220542829" style="zoom:67%;" />
 
 1. 创建 RequestProcessor 的接口然后令 RequestProcessor 矩阵的相关类实现它
 

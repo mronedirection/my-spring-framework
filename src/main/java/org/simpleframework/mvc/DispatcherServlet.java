@@ -33,7 +33,7 @@ public class DispatcherServlet extends HttpServlet {
         super.init(config);
         //1.初始化容器
         BeanContainer beanContainer = BeanContainer.getInstance();
-        beanContainer.loadBeans("com.imooc");
+        beanContainer.loadBeans("com.pro");
         new AspectWeaverAspectj().doAop();
         new DependencyInjector().doIoc();
         //2.初始化请求处理器责任链

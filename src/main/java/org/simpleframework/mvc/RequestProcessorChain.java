@@ -31,7 +31,7 @@ public class RequestProcessorChain {
     //http请求路径
     private String requestPath;
     //http响应状态码
-    private  int responseCode;
+    private int responseCode;
     //请求结果渲染器
     private ResultRender resultRender;
 

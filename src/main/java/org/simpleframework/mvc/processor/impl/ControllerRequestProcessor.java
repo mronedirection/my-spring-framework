@@ -35,15 +35,16 @@ public class ControllerRequestProcessor implements RequestProcessor {
     //请求和controller方法的映射集合
     private Map<RequestPathInfo, ControllerMethod> pathControllerMethodMap = new ConcurrentHashMap<>();
 
-    /**
-     * 依靠容器的能力，建立起请求路径、请求方法与Controller方法实例的映射
-     */
+
     public ControllerRequestProcessor() {
         this.beanContainer = BeanContainer.getInstance();
         Set<Class<?>> requestMappingSet = beanContainer.getClassesByAnnotation(RequestMapping.class);
         initPathControllerMethodMap(requestMappingSet);
     }
 
+    /**
+     * 依靠容器的能力，建立起请求路径、请求方法与Controller方法实例的映射
+     */
     private void initPathControllerMethodMap(Set<Class<?>> requestMappingSet) {
         if (ValidationUtil.isEmpty(requestMappingSet)) {
             return;
