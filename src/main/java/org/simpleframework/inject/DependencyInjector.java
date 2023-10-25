@@ -59,7 +59,6 @@ public class DependencyInjector {
             }
         }
 
-
     }
     /**
      * 根据Class在beanContainer里获取其实例或者其实现类的实例

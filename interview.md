@@ -1,4 +1,37 @@
+# 项目相关问题
+
+**简单介绍一下这个项目？**
+
+对于Java开发程序员来说，Spring全家桶是非常重要的，而作为其中基石的Spring框架更是重中之重，因此本项目通过对Spring源码的学习与理解，完成了Spring框架的**IOC、AOP和MVC功能模块**的开发、**Bean的生命周期**等功能的开发。通过从 0 搭建一个较为完备的 Web 框架来提升框架设计能力，了解 Spring 框架的设计思路。
+
+
+
+**项目亮点：**
+
+1.自研IOC容器的实现，包括解析配置、依赖注入，控制反转功能；
+
+2.自研AOP的实现，使用Cglib动态代理实现自研AOP，并引入AspectJ框架，使用pointcut灵活织入切面逻辑；
+
+3.自研MVC的实现：创建中央调度器，对HTTP连接重构，创建请求处理以及结果渲染的相关矩阵，以责任链的模式执行请求，并对处理结果进行渲染；
+
+
+
 # 一、IOC相关问题
+
+
+
+## 框架具备的基本功能
+
+- 解析配置（XML、注解等）
+- 定义和注册对象
+- 注入对象
+- 提供通用的工具类
+
+## IoC容器的实现
+
+创建注解-->提取标记对象-->实现容器-->依赖注入
+
+
 
 ## **如何实现自研框架的IOC?**
 
@@ -27,7 +60,56 @@
 
 至此，就实现了IOC容器的创建以及依赖注入；
 
-## 为什么要使用IOC？
+
+
+## 为什么要使用IOC？/谈谈你对IOC的理解？
+
+**IoC（Inversion of Control:控制反转）** 是一种设计思想，而不是一个具体的技术实现。IoC 的思想就是将原本在程序中手动创建对象的控制权，交由 Spring 框架来管理。不过， IoC 并非 Spring 特有，在其他语言中也有应用。
+
+**什么是IOC：**
+
+控制反转中的控制指的是对象创建（实例化、管理）的权力，反转指的是将控制权交给外部环境（Spring 框架、IoC 容器）；
+
+将对象之间的相互依赖关系交给 IoC 容器来管理，并由 IoC 容器完成对象的注入。这样可以很大程度上简化应用的开发，把应用从复杂的依赖关系中解放出来。 IoC 容器就像是一个工厂一样，当我们需要创建一个对象的时候，只需要配置好配置文件/注解即可，完全不用考虑对象是如何被创建出来的。
+
+在 Spring 中， IoC 容器是 Spring 用来实现 IoC 的载体， IoC 容器实际上就是个 Map（key，value），Map 中存放的是各种对象。
+
+Spring 时代我们一般通过 XML 文件来配置 Bean，后来开发人员觉得 XML 文件来配置不太好，于是 SpringBoot 注解配置就慢慢开始流行起来。
+
+1. 控制反转 IoC (Inversion of Controller)
+   - 依托一个类似工厂的 **IoC 容器**
+   - 将对象的**创建**、依赖关系的**管理**以及**生命周期**交由IoC容器管理
+   - 降低系统在实现上的**复杂性和耦合度**,易于扩展,满足**开闭原则**（软件中的对象（类、模块、方法等），对于**扩展是开放的**，对于**修改是封闭的**）
+
+2. IoC容器的优势
+   - **避免在各处使用new来创建类** ,并且可以做到统一维护
+   - 创建实例的时候不需要 了解其中的细节
+   - 反射+工厂模式的合体,满足开闭原则
+
+3. 依赖注入 
+   - 构造方法实现注入 
+   - setter实现注入 
+   - 接口实现注入
+   - 注解实现注入
+
+
+
+## 依赖注入是如何实现的？
+
+之所以需要依赖注入，是因为在拿到Bean实例之后，Bean中的属性由于没有设置，因此还是null，因此，需要使用依赖注入来创建必要的成员变量，并将其注入Bean实例中，项目中具体实现思路是：
+
+**实现思路**
+
+   - 定义相关的注解标签
+
+   - 实现创建被注解标记的成员变量的实例，并将其注入到成员变量里
+
+     - 遍历 Bean 容器中所有的 Class 对象
+     - 遍历 Class 对象的所有成员变量
+     - 找出被 Autowired 标记的成员变量
+     - 获取这些成员变量的类型
+     - 获取这些成员变量的类型在容器里对应的实例
+     - 通过反射将对应的成员变量实例注入到成员变量所在类的实例里
 
 
 
@@ -79,7 +161,74 @@ singletonFactories（三级缓存）： 缓存创建Bean的原始工厂
    每一次getBean()时，都会产生一个新的Bean，如此反复下去就会有无穷无尽的Bean产生了，最终导致StackOverflowError；
    
 
+
+
 # 二、AOP相关问题
+
+## 什么是AOP，和OOP的区别是什么？
+
+容器是 OOP 的高级工具，以低耦合低侵入的方式打通从上到下的开发通道：
+
+- 按部就班填充代码逻辑实现业务功能，每层逻辑都可无缝替换
+- **OOP将业务程序分解成各个层次的对象，通过对象联动完成业务**
+- 无法很好地处理分散在各业务里的**通用系统需求**
+
+系统需求是指程序员才去关心的需求：
+
+- 添加日志信息:为每个方法添加统计时间
+- 添加系统权限校验∶针对某些方法进行限制
+- OOP下必须得为每个方法都添加通用的逻辑工作，增加维护成本
+
+关注点分离原则：不同的问题交给不同的部分去解决，每部分专注解决自己的问题
+
+### 为什么要使用AOP：
+
+AOP 是一种编程思想，是面向对象编程（OOP）的一种补充，主要应用于处理一些**具有横切性质的系统级服务**；
+
+AOP可以**拦截指定的方法并对方法增强**，而且无需侵入到业务代码中，主要作用是分**离功能性需求和非功能性需求**，使开发人员可以集中处理某一个关注点或者横切逻辑，**减少对业务代码的侵入**，增强代码的可读性和可维护性。
+
+**简单的说**，AOP 的作用就是保证开发者在不修改源代码的前提下，为系统中的业务组件添加某种通用功能。
+
+应用场景：日志记录、事务管理、权限验证、性能监测
+
+
+
+## AOP的几个关键概念？
+
+- 切面 Aspect :把通知应用到切入点的过程，将横切关注点逻辑进行模块化封装的实体对象
+- 通知 Advice :在选取出来的JoinPoint上**要执行的操作、逻辑**，是待织入的方法，还定义了织入逻辑的时机，好比是 Class 里面的方法
+- 连接点 Joinpoint :通过pointcut选取出来的集合中的**具体的一个执行点**，我们就叫JoinPoint，是类里面可以被增强的方法，允许使用 Advice 的地方
+- 切入点 pointcut :是实际被增强的方法，**织入切面逻辑时候的切入点**，是一个基于正则表达式的表达式，通常一个pointcut，会选取程序中的某些我们感兴趣的执行点，或者程序执行点的集合，我们可以定义一系列规则对Joinpoint进行筛选
+- 目标对象Target :是指符合Pointcut条件，要被织入横切逻辑的对象
+- Weaving：是指把切面应用到目标对象来创建新的 advised 对象的过程。
+- SpringAOP 默认只支持方法级别的 Joinpoint
+
+
+
+### Advice的种类：
+
+- BeforeAdvice :在JoinPoint前被执行的Advice
+- AfterAdvice :好比try..catch..finaly里面的finaly
+- AfterReturningAdvice :在Joinpoint执行流程正常返回后被执行
+- AfterThrowingAdvice : Joinpoint执行过程中抛出异常才会触发
+- AroundAdvice :在Joinpoint前和后都执行，最常用的Advice
+
+
+
+### Aspect的执行顺序
+
+单个 Aspect 的执行顺序
+
+<img src="F:/code/IdeaProjects/spring/simpleframework/img/image-20210310185418129.png" alt="image-20210310185418129" style="zoom: 80%;" />
+
+多个 Aspect 的执行顺序
+
+<img src="F:/code/IdeaProjects/spring/simpleframework/img/image-20210310185454340.png" alt="image-20210310185454340" style="zoom: 80%;" />
+
+1. 按照order的顺序**升序执行**完所有Aspect的**before方法**
+2. 执行被代理类的方法
+3. 如果被代理方法正常返回，则按照order的顺序**降序执行**完所有Aspect的**afterReturning方法**
+4. 如果被代理方法抛出异常，则按照order的顺序**降序执行**完所有Aspect的**afterThrowing方法**
 
 ## **如何实现自研框架的AOP?**
 
@@ -116,13 +265,7 @@ singletonFactories（三级缓存）： 缓存创建Bean的原始工厂
 
 - 引入 AspectJ的切面表达式和相关的定位解析机制，使用pointcut 可以让切面逻辑的织入更加灵活；
 
-## 为什么要使用AOP？
 
-AOP可以拦截指定的方法并对方法增强，而且无需侵入到业务代码中，主要作用是分离功能性需求和非功能性需求，使开发人员可以集中处理某一个关注点或者横切逻辑，减少对业务代码的侵入，增强代码的可读性和可维护性。
-
-简单的说，AOP 的作用就是保证开发者在不修改源代码的前提下，为系统中的业务组件添加某种通用功能。
-
-应用场景：日志记录、事务管理、权限验证、性能监测
 
 ## JDK动态代理和Cglib(Code Generation Library) 动态代理的区别？
 
@@ -140,9 +283,11 @@ cglib类似子类继承，可以代理没实现接口的类，其实就是**在�
 
 SpringAOP的底层机制是**Cglib和JDK动态代理共存**，如果Bean 实现了接口则用 JDK，否则使用 Cglib；
 
+
+
 ## Spring AOP 和 AspectJ的区别？
 
-Spring框架中可以使用Spring自带的AOP或者使用Aspectj实现切面，但一般都是基于AspectJ实现AOP操作，因为AspectJ引入了Pointcut表达式，使用起来更加灵活简便；
+Spring框架中可以使用Spring自带的AOP或者使用Aspectj实现切面，AspectJ，本身是单独的框架，不属于Spring组成部分，独立于AOP框架，一般把AspectJ和Spring框架一起使用，进行AOP操作，因为AspectJ引入了Pointcut表达式，可以实现对某个类的某个方法进行增强，使用起来更加灵活简便；
 
 **能力和目标不同：**
 
@@ -163,27 +308,7 @@ Spring框架中可以使用Spring自带的AOP或者使用Aspectj实现切面，�
 
 - Spring AOP是使用代理模式在**运行时**才创建对应的代理类，而AspectJ 是在应**用程序执行之前将这些切面织入到主代码中,** 因此没有额外的**运行时开销**，效率要比Spring AOP高；
 
-## 什么是AOP，和OOP的区别是什么？
 
-AOP 是一种编程思想，是面向对象编程（OOP）的一种补充，主要应用于处理一些**具有横切性质的系统级服务**；
-
-AOP可以**拦截指定的方法并对方法增强**，而且无需侵入到业务代码中，主要作用是分**离功能性需求和非功能性需求**，使开发人员可以集中处理某一个关注点或者横切逻辑，**减少对业务代码的侵入**，增强代码的可读性和可维护性。
-
-**简单的说**，AOP 的作用就是保证开发者在不修改源代码的前提下，为系统中的业务组件添加某种通用功能。
-
-应用场景：日志记录、事务管理、权限验证、性能监测
-
-## AOP的几个关键概念？
-
-Pointcut：**织入切面逻辑时候的切入点**，是一个基于正则表达式的表达式，通常一个pointcut，会选取程序中的某些我们感兴趣的执行点，或者程序执行点的集合。
-
-JoinPoint：通过pointcut选取出来的集合中的**具体的一个执行点**，我们就叫JoinPoint.
-
-Advice：在选取出来的JoinPoint上**要执行的操作、逻辑**。
-
-Aspect：就是我们关注点的模块化。这个关注点可能会横切多个对象和模块，事务管理是横切关注点的很好的例子。它是一个抽象的概念，从软件的角度来说是指在应用程序不同模块中的某一个领域或方面。又pointcut 和advice组成。
-
-Weaving：把切面应用到目标对象来创建新的 advised 对象的过程。
 
 # 三、MVC相关问题
 
@@ -257,13 +382,63 @@ springMVC框架是基于Java的**实现了MVC框架模式**的请求驱动类型
 
 # 四、Spring相关问题
 
-## **Spring核心模块有哪些？**
+## **什么是Spring？**
+
+Spring 是一款开源的轻量级 Java 开发框架，旨在提高开发人员的开发效率以及系统的可维护性。
+
+我们一般说 Spring 框架指的都是 Spring Framework，它是很多模块的集合，使用这些模块可以很方便地协助我们进行开发，比如说 Spring 支持 IoC（Inversion of Control:控制反转） 和 AOP(Aspect-Oriented Programming:面向切面编程)、可以很方便地对数据库进行访问、可以很方便地集成第三方组件（电子邮件，任务，调度，缓存等等）、对单元测试支持比较好、支持 RESTful Java 应用程序的开发。
+
+Spring 最核心的思想就是不重新造轮子，开箱即用，提高开发效率。
+
+
+
+##  **Spring 核心模块有哪些？**
+
+#### Core Container
+
+Spring 框架的核心模块，也可以说是基础模块，主要提供 IoC 依赖注入功能的支持。Spring 其他所有的功能基本都需要依赖于该模块。
+
+- **spring-core**：Spring 框架基本的核心工具类。
+- **spring-beans**：提供对 bean 的创建、配置和管理等功能的支持。
+- **spring-context**：提供对国际化、事件传播、资源加载等功能的支持。
+- **spring-expression**：提供对表达式语言（Spring Expression Language） SpEL 的支持，只依赖于 core 模块，不依赖于其他模块，可以单独使用。
+
+#### AOP
+
+提供了面向切面的编程实现；
+
+- **spring-aspects**：该模块为与 AspectJ 的集成提供支持。
+- **spring-aop**：提供了面向切面的编程实现。
+- **spring-instrument**：提供了为 JVM 添加代理（agent）的功能。 具体来讲，它为 Tomcat 提供了一个织入代理，能够为 Tomcat 传递类文 件，就像这些文件是被类加载器加载的一样。没有理解也没关系，这个模块的使用场景非常有限。
+
+#### Data Access/Integration
+
+- **spring-jdbc**：提供了对数据库访问的抽象 JDBC。不同的数据库都有自己独立的 API 用于操作数据库，而 Java 程序只需要和 JDBC API 交互，这样就屏蔽了数据库的影响。
+- **spring-tx**：提供对事务的支持。
+- **spring-orm**：提供对 Hibernate、JPA、iBatis 等 ORM 框架的支持。
+- **spring-oxm**：提供一个抽象层支撑 OXM(Object-to-XML-Mapping)，例如：JAXB、Castor、XMLBeans、JiBX 和 XStream 等。
+- **spring-jms** : 消息服务。自 Spring Framework 4.1 以后，它还提供了对 spring-messaging 模块的继承。
+
+#### Spring Web
+
+- **spring-web**：对 Web 功能的实现提供一些最基础的支持。
+- **spring-webmvc**：提供对 Spring MVC 的实现。
+- **spring-websocket**：提供了对 WebSocket 的支持，WebSocket 可以让客户端和服务端进行双向通信。
+- **spring-webflux**：提供对 WebFlux 的支持。WebFlux 是 Spring Framework 5.0 中引入的新的响应式框架。与 Spring MVC 不同，它不需要 Servlet API，是完全异步。
+
+#### Messaging
+
+**spring-messaging** 是从 Spring4.0 开始新加入的一个模块，主要职责是为 Spring 框架集成一些基础的报文传送应用。
+
+#### Spring Test
+
+Spring 团队提倡测试驱动开发（TDD）。有了控制反转 (IoC)的帮助，单元测试和集成测试变得更简单。
+
+Spring 的测试模块对 JUnit（单元测试框架）、TestNG（类似 JUnit）、Mockito（主要用来 Mock 对象）、PowerMock（解决 Mockito 的问题比如无法模拟 final, static， private 方法）等等常用的测试框架支持的都比较好。
 
 1. spring-core
 
    包含框架基本的核心工具类，其他组件都要使用到这个包里的类；
-
-   定义并提供资源的访问方式；
 
 2. spring-beans 
 
@@ -279,13 +454,67 @@ springMVC框架是基于Java的**实现了MVC框架模式**的请求驱动类型
 
 4. spring-aop 
 
-   最小化的动态代理实现；
+   提供了面向切面的编程实现；
 
-   JDK动态代理；
 
-   Cglib；
 
-   只能使用运行时织入，仅支持方法级编织，仅支持方法执行切入点；
+##  **Spring,Spring MVC,Spring Boot 之间什么关系?**
+
+Spring 包含了多个功能模块（上面刚刚提到过），其中最重要的是 Spring-Core（主要提供 IoC 依赖注入功能的支持） 模块， Spring 中的其他模块（比如 Spring MVC）的功能实现基本都需要依赖于该模块。
+
+Spring MVC 是 Spring 中的一个很重要的模块，主要赋予 Spring 快速构建 MVC 架构的 Web 程序的能力。MVC 是模型(Model)、视图(View)、控制器(Controller)的简写，其核心思想是通过将业务逻辑、数据、显示分离来组织代码。
+
+使用 Spring 进行开发各种配置过于麻烦比如开启某些 Spring 特性时，需要用 XML 或 Java 进行显式配置。于是，诞生了Spring Boot ！
+
+Spring Boot 只是简化了配置，如果你需要构建 MVC 架构的 Web 程序，你还是需要使用 Spring MVC 作为 MVC 框架，只是说 Spring Boot 帮你简化了 Spring MVC 的很多配置，真正做到开箱即用！
+
+
+
+**什么是 Spring Bean？**
+
+Bean 代指的就是那些被 IoC 容器所管理的对象，将一个类声明为Bean的注解可以使用：
+
+`@Component`：通用的注解，可标注任意类为 `Spring` 组件。如果一个 Bean 不知道属于哪个层，可以使用`@Component` 注解标注。
+
+`@Repository` : 对应持久层即 Dao 层，主要用于数据库相关操作。
+
+`@Service` : 对应服务层，主要涉及一些复杂的逻辑，需要用到 Dao 层。
+
+`@Controller` : 对应 Spring MVC 控制层，主要用于接受用户请求并调用 `Service` 层返回数据给前端页面。
+
+
+
+**@Component 和 @Bean 的区别是什么？**
+
+`@Component` 注解作用于类，而`@Bean`注解作用于方法。
+
+`@Component`通常是通过类路径扫描来自动侦测以及自动装配到 Spring 容器中（我们可以使用 `@ComponentScan` 注解定义要扫描的路径从中找出标识了需要装配的类自动装配到 Spring 的 bean 容器中）。`@Bean` 注解通常是我们在标有该注解的方法中定义产生这个 bean,`@Bean`告诉了 Spring 这是某个类的实例。
+
+`@Bean` 注解比 `@Component` 注解的自定义性更强，而且很多地方我们只能通过 `@Bean` 注解来注册 bean。比如当我们引用第三方库中的类需要装配到 `Spring`容器时，则只能通过 `@Bean`来实现。
+
+
+
+**注入 Bean 的注解有哪些？**
+
+Spring 内置的 `@Autowired` 以及 JDK 内置的 `@Resource` 和 `@Inject` 都可以用于注入 Bean。
+
+`@Autowired` 和`@Resource`使用的比较多一些。
+
+**@Autowired 和 @Resource 的区别：**
+
+`@Autowired` 是 Spring 提供的注解，`@Resource` 是 JDK 提供的注解。
+
+`Autowired` 默认的注入方式为`byType`（根据类型进行匹配），`@Resource`默认注入方式为 `byName`（根据名称进行匹配）。
+
+当一个接口存在多个实现类的情况下，`@Autowired` 和`@Resource`都需要通过名称才能正确匹配到对应的 Bean。`Autowired` 可以通过 `@Qualifier` 注解来显式指定名称，`@Resource`可以通过 `name` 属性来显式指定名称。
+
+`@Autowired` 支持在构造函数、方法、字段和参数上使用。`@Resource` 主要用于字段和方法上的注入，不支持在构造函数或参数上使用。
+
+
+
+
+
+
 
 ## Spring中，有几种织入切面逻辑的方式？
 
@@ -293,11 +522,11 @@ springMVC框架是基于Java的**实现了MVC框架模式**的请求驱动类型
 
 ## 用到的设计模式？
 
-### **门面/外观模式(Facade)**
+### **门面模式(Facade)**
 
 提供一个统一的接口，用来访问子系统中的一群接口，从而让子系统更容易使用。
 
-外观（Facade）模式包含以下主要角色：
+门面（Facade）模式包含以下主要角色：
 
 - 外观（Facade）角色：为多个子系统对外提供一个共同的接口。
 - 子系统（Sub System）角色：实现系统的部分功能，客户可以通过外观角色访问它。
@@ -369,13 +598,23 @@ Cglib基于 ASM 机制实现，**通过生成被代理类的子类作为代理�
 
 SpringAOP的底层机制是Cglib和JDK动态代理共存，如果Bean 实现了接口则用 JDK，否则使用 Cglib；
 
+
+
 ### 单例模式
+
+单例模式可以使用四种方式实现，懒汉式，饿汉式，内部类，内部枚举类，特别是使用内部枚举类的方式构造单例，可以保证即使使用反射中的爆破，也可以保证单例，因此在项目中，IOC容器BeanContainer的单例实现就是使用的内部枚举类；
 
 
 
 ## 用到的比较难的点？
 
-设计模式，反射，自定义注解，枚举类
+设计模式的理解，反射的灵活使用，自定义注解的实现，枚举类的使用等；
+
+使用内部枚举类构造IOC容器BeanContainer的单例实现；
+
+使用ConcurrentHashMap来存储Bean，**支持高并发更新与查询**，保证高并发情况下的数据一致性；
+
+
 
 ## ConcurrentHashMap与HashMap和HashTable的区别？
 
@@ -401,3 +640,49 @@ ConcurrentHashMap采用**分段锁实现线程安全**，容器中有多把锁�
 
 Hashtable采用synchronized来实现线程安全，在方法上加synchronized同步锁。
 
+
+
+## Java中如何实现自定义注解？
+
+1. 注解的功能
+   - 作为特定的标记，用于告诉编译器一些信息
+   - 编译时动态处理，如动态生成代码
+   - 运行时动态处理，作为额外信息的媒体，如获取注解信息
+2. 注解的分类
+   - 标准注解：@Override、@Deprecated、@SupressWarnings
+   - 元注解(修饰注解的注解，通常用在注解的定义之上)：@Retention、@Target、@Inherited、@Documented
+     @Target：定义注解的作用目标
+      @Retention：定义注解的生命周期，用于决定被该元注解修饰的注解是否显示在编译的文件中
+      @Inherited：是否允许子类继承该注解
+      @Documented：注解是否应当被包含在 JavaDoc 文档中
+   - 自定义注解(使用元注解实现)
+
+3. 自定义注解
+   - 自定义注解格式
+
+```java
+public @interface 注解名{
+    修饰符 返回值 属性名() 默认值;
+    修饰符 返回值 属性名() 默认值;
+    ...
+}
+```
+
+   - 注解属性支持的类型
+
+     - 所有的基本数据类型
+     - Enum类型
+
+       - String类型
+       - Annotation类型
+       - Class 类型
+       - 以上所有类型的数组
+
+5. **注解的工作原理**
+
+- 通过**键值对**的形式为注解属性**赋值**
+- 编译器检查注解的**使用范围**，将注解信息**写入元素属性表**
+- 运行时 JVM 将 RUNTIME 的所有注解属性取出并最终存入 map 里（单个Class文件内所有的RUNTIME的注解而非整个项目的RUNTIME注解）
+- 创建AnnotationInvacationHandler实例并传入前面的map
+- JVM使用JDK动态代理为注解生成动态代理类，并初始化处理器
+- 调用invoke方法，通过传入方法名返回注解对应的属性值
